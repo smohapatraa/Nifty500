@@ -1182,3 +1182,23 @@ with col_dl2:
 
 st.divider()
 st.caption("⚠️ Not financial advice. Always verify at market open (9:15 AM IST).")
+# ------------------------------------------------------------
+# SEBI DISCLAIMER
+# ------------------------------------------------------------
+st.divider()
+st.caption("""
+⚠️ **DISCLAIMER:** I am **NOT** a SEBI-registered Research Analyst or Investment Advisor. 
+All content, tools, charts, screeners, and signals provided in this dashboard are for 
+**educational and informational purposes only** and should **NOT** be considered as 
+investment advice or trading recommendations. 
+
+Trading and investing in securities markets involves substantial risk of loss. 
+Past performance is not indicative of future results. 
+
+Please consult a **SEBI-registered Investment Advisor** before making any investment 
+or trading decision. The creator of this dashboard shall not be held liable for any 
+direct or indirect losses arising from the use of this content.
+
+By using this dashboard, you acknowledge that you are solely responsible for your 
+own trading and investment decisions.
+""")
