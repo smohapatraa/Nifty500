@@ -433,7 +433,7 @@ def compute_enhanced_metrics(all_data, ticker_df, target_date, index_type):
 # ------------------------------------------------------------
 st.title("📊 Mohapatra S. — Indian Market Intraday & Gold Strategy Screener
 Technical Market Analysis • Intraday Setups • Gold Trading Strategies
-Important: Please read the Disclaimer at the bottom before using the screener.)")
+Important: Please read the Disclaimer at the bottom before using the screener.")")
 st.markdown("### Complete Pre-Market Analysis Dashboard | 1:2 Risk-Reward SOP + Gold Trading")
 
 st.sidebar.header("⚙️ Configuration")
