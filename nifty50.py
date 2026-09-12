@@ -70,7 +70,7 @@ def load_all_recent_data(ticker_df):
     tickers = ticker_df['YF_Ticker'].tolist()
     all_data = {}
     total = len(tickers)
-    progress_bar = st.progress(0, text="Downloading 120-day market data...")
+    progress_bar = st.progress(0, text="Downloading 120-day market data for Sitakanta Mohapatra...")
     batch_size = 50
     for i in range(0, total, batch_size):
         batch = tickers[i:i+batch_size]
@@ -431,7 +431,7 @@ def compute_enhanced_metrics(all_data, ticker_df, target_date, index_type):
 # ------------------------------------------------------------
 # 6. MAIN APP UI
 # ------------------------------------------------------------
-st.title("📊 Indian Stock Market Intraday + Gold Strategy Screener")
+st.title("📊 Indian Stock Market Intraday + Gold Strategy Screener by Sitakanta Mohapatra")
 st.markdown("### Complete Pre-Market Analysis Dashboard | 1:2 Risk-Reward SOP + Gold Trading")
 
 st.sidebar.header("⚙️ Configuration")
