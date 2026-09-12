@@ -431,7 +431,9 @@ def compute_enhanced_metrics(all_data, ticker_df, target_date, index_type):
 # ------------------------------------------------------------
 # 6. MAIN APP UI
 # ------------------------------------------------------------
-st.title("📊 Indian Stock Market Intraday + Gold Strategy Screener by Sitakanta Mohapatra")
+st.title("📊 Mohapatra S. — Indian Market Intraday & Gold Strategy Screener
+Technical Market Analysis • Intraday Setups • Gold Trading Strategies
+Important: Please read the Disclaimer at the bottom before using the screener.)")
 st.markdown("### Complete Pre-Market Analysis Dashboard | 1:2 Risk-Reward SOP + Gold Trading")
 
 st.sidebar.header("⚙️ Configuration")
