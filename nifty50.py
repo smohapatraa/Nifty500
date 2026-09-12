@@ -964,12 +964,29 @@ def calculate_buy_sell_zones(etf_df, gold_df, inr_df,
     if etf_close is None or len(etf_close) < 20:
         return None
 
+    # Safely extract High and Low as flat Series (handles multi-index columns)
+    def _squeeze_col(df, col):
+        if df is None or df.empty or col not in df.columns:
+            return None
+        s = df[col]
+        if isinstance(s, pd.DataFrame):
+            s = s.iloc[:, 0]
+        s = pd.to_numeric(s, errors='coerce').dropna()
+        return s if len(s) > 0 else None
+
+    etf_high_series = _squeeze_col(etf_df, 'High')
+    etf_low_series = _squeeze_col(etf_df, 'Low')
+
+    if etf_high_series is None or etf_low_series is None:
+        return None
+
     lookback = min(30, len(etf_close))
-    recent = etf_df.tail(lookback)
+    recent_high_series = etf_high_series.tail(lookback)
+    recent_low_series = etf_low_series.tail(lookback)
 
     last_close = float(etf_close.iloc[-1])
-    recent_high = float(recent['High'].max())
-    recent_low = float(recent['Low'].min())
+    recent_high = float(recent_high_series.max())
+    recent_low = float(recent_low_series.min())
     recent_avg = float(etf_close.tail(lookback).mean())
 
     pct_from_high = ((last_close - recent_high) / recent_high) * 100
@@ -1047,7 +1064,6 @@ def calculate_buy_sell_zones(etf_df, gold_df, inr_df,
         'sell_pct': sell_pct,
         'inr_trend': inr_trend,
     }
-
 
 if etf_df is not None and len(etf_df) >= 20:
     zones = calculate_buy_sell_zones(
