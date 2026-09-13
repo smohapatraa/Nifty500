@@ -5,6 +5,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import numpy as np
+from streamlit_autorefresh import st_autorefresh
+
+# 300,000 milliseconds = 5 minutes
+st_autorefresh(interval=300000, key="nifty_gold_refresh")
 
 # ------------------------------------------------------------
 # Streamlit page config
