@@ -11,6 +11,33 @@ import numpy as np
 # ------------------------------------------------------------
 st.set_page_config(page_title="Nifty Intraday + Gold Strategy Screener", layout="wide")
 
+import os
+from PIL import Image
+
+# ---- Developer Profile Card ----
+st.sidebar.markdown("### 👨‍💻 About the Developer")
+
+# Load profile picture (falls back gracefully if not found)
+profile_path = "myimage.jpg"  # <-- change to your actual filename
+
+if os.path.exists(profile_path):
+    profile_img = Image.open(profile_path)
+    st.sidebar.image(profile_img, width=180, caption="S. Mohapatra")
+else:
+    st.sidebar.info("📷 Profile picture not found")
+
+st.sidebar.markdown("""
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 12px; border-radius: 10px; color: white; text-align: center;">
+    <p style="margin: 0; font-size: 13px;">
+        <b>Chief Everything Officer</b><br>
+        <span style="font-size: 11px; opacity: 0.85;">
+        📊 Data Nerd · 🥇 Gold Whisperer · 🚀 Streamlit Fanboy
+        </span>
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
 # ------------------------------------------------------------
 # HELPER: Ensure DataFrame columns are 1-D Series
 # ------------------------------------------------------------
