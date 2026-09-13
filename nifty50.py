@@ -12,33 +12,44 @@ import numpy as np
 st.set_page_config(page_title="Nifty Intraday + Gold Strategy Screener", layout="wide")
 
 import os
+import base64
 from PIL import Image
 
-# ---- Developer Profile Card ----
-st.sidebar.markdown("### 👨‍💻 About the Developer")
+def get_image_base64(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
-# Load profile picture (falls back gracefully if not found)
-profile_path = "myimage.jpg"  # <-- change to your actual filename
+profile_path = "myimage.jpg"
 
 if os.path.exists(profile_path):
-    profile_img = Image.open(profile_path)
-    st.sidebar.image(profile_img, width=180, caption="S. Mohapatra")
+    img_b64 = get_image_base64(profile_path)
+    st.sidebar.markdown(f"""
+    <div style="text-align: center; padding: 15px;">
+        <img src="data:image/jpeg;base64,{img_b64}"
+             style="border-radius: 50%; width: 150px; height: 150px;
+                    object-fit: cover; border: 4px solid #FFD700;
+                    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);">
+        <h3 style="margin: 15px 0 5px 0; color: #FFD700;">S. Mohapatra</h3>
+        <p style="font-size: 13px; color: #00ff88; margin: 5px 0; font-weight: 600;">
+            💼 Finance &amp; Accounts
+        </p>
+        <p style="font-size: 13px; color: #4facfe; margin: 5px 0; font-weight: 600;">
+            📊 Data Analyst
+        </p>
+        <div style="margin-top: 12px; padding: 10px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 8px;">
+            <p style="font-size: 11px; color: #ccc; margin: 0; line-height: 1.8;">
+                🐍 <b>Python</b> &nbsp;·&nbsp; 🐼 <b>Pandas</b> &nbsp;·&nbsp; 🚀 <b>Streamlit</b>
+            </p>
+        </div>
+        <p style="font-size: 10px; color: #888; margin-top: 12px; font-style: italic;">
+            "Turning spreadsheets into insights."
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 else:
-    st.sidebar.info("📷 Profile picture not found")
-
-st.sidebar.markdown("""
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 12px; border-radius: 10px; color: white; text-align: center;">
-    <p style="margin: 0; font-size: 13px;">
-        <b>Chief Everything Officer</b><br>
-        <span style="font-size: 11px; opacity: 0.85;">
-        📊 Data Nerd · 🥇 Gold Whisperer · 🚀 Streamlit Fanboy
-        </span>
-    </p>
-</div>
-""", unsafe_allow_html=True)
-
-# ------------------------------------------------------------
+    st.sidebar.info("📷 Profile picture not found — add profile.jpg to the repo")# ------------------------------------------------------------
 # HELPER: Ensure DataFrame columns are 1-D Series
 # ------------------------------------------------------------
 def _squeeze_close(df):
