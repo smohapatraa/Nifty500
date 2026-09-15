@@ -7,6 +7,66 @@ from datetime import datetime, timedelta
 import numpy as np
 from streamlit_autorefresh import st_autorefresh
 
+from datetime import datetime, timedelta, timezone
+
+def get_default_candidate_date():
+    """Return today if after 6 PM IST, else the previous weekday (skip weekends only)."""
+    ist = timezone(timedelta(hours=5, minutes=30))
+    now_ist = datetime.now(ist)
+
+    if now_ist.hour < 18:
+        candidate = now_ist.date() - timedelta(days=1)
+    else:
+        candidate = now_ist.date()
+
+    # Skip weekends
+    while candidate.weekday() >= 5:
+        candidate -= timedelta(days=1)
+
+    return candidate
+
+
+def has_market_data(base_data, check_date):
+    """Return True if at least a few stocks have OHLC data on check_date."""
+    if not base_data:
+        return False
+
+    target = pd.Timestamp(check_date)
+    count = 0
+
+    for ticker, hist in base_data.items():
+        if hist is None or hist.empty:
+            continue
+        # Filter to the exact date
+        day_data = hist[hist.index.normalize() == target]
+        if not day_data.empty:
+            # Ensure Close and Volume are present and not NaN
+            row = day_data.iloc[-1]
+            close = _to_float(row['Close']) if 'Close' in row else None
+            vol = _to_float(row['Volume']) if 'Volume' in row else None
+            if close and vol and not pd.isna(close) and not pd.isna(vol):
+                count += 1
+                if count >= 5:  # enough signal that the market was open
+                    return True
+
+    return False
+
+
+def find_last_trading_date(base_data, start_date, max_lookback=15):
+    """Walk backwards from start_date until a date with real market data is found."""
+    candidate = start_date
+    for _ in range(max_lookback):
+        # Skip weekends quickly
+        while candidate.weekday() >= 5:
+            candidate -= timedelta(days=1)
+
+        if has_market_data(base_data, candidate):
+            return candidate
+
+        candidate -= timedelta(days=1)
+
+    return start_date  # fallback
+
 # 300,000 milliseconds = 5 minutes
 st_autorefresh(interval=300000, key="nifty_gold_refresh")
 
@@ -102,25 +162,6 @@ def get_nifty_tickers(index_type="Nifty 50"):
         st.error(f"Failed to fetch {index_type} list: {e}")
         return None
 
-
-from datetime import datetime, timedelta, timezone
-
-def get_default_market_date():
-    """Return today if after 6 PM IST, else the previous weekday."""
-    ist = timezone(timedelta(hours=5, minutes=30))
-    now_ist = datetime.now(ist)
-
-    # If before 6 PM, use previous day; otherwise use today
-    if now_ist.hour < 18:
-        candidate = now_ist.date() - timedelta(days=1)
-    else:
-        candidate = now_ist.date()
-
-    # Skip weekends only
-    while candidate.weekday() >= 5:  # 5 = Saturday, 6 = Sunday
-        candidate -= timedelta(days=1)
-
-    return candidate
 
 # ------------------------------------------------------------
 # 2. DOWNLOAD EXTENDED DATA
@@ -520,14 +561,13 @@ st.sidebar.caption(f"Base Risk per trade (1%): ₹{risk_per_trade:,.0f}")
 
 selected_date = st.sidebar.date_input(
     "Select Analysis Date",
-    value=get_default_market_date(),
-    max_value=datetime.today(),
-    help="Defaults to previous weekday, or today after 6 PM IST"
+    value=datetime.today(),
+    max_value=datetime.today()
 )
+
 day_name = selected_date.strftime('%A')
 if day_name in ['Saturday', 'Sunday']:
     st.sidebar.warning(f"⚠️ {day_name} - Markets closed")
-
 # ------------------------------------------------------------
 # LOAD DATA
 # ------------------------------------------------------------
