@@ -872,7 +872,7 @@ st.markdown(f"""
 st.sidebar.header("🎯 Screener Filters")
 search = st.sidebar.text_input("🔎 Search Symbol/Company", "").strip().upper()
 min_score = st.sidebar.slider("Minimum Pre-Market Score", 0, 5, 4)
-trend_filter = st.sidebar.selectbox("Daily Trend (20 EMA)", ["All", "Bullish Only", "Bearish Only"])trend_filter = st.sidebar.selectbox(
+trend_filter = st.sidebar.selectbox(
     "Daily Trend (20 EMA)",
     ["All", "Bullish Only", "Bearish Only"],
     index=1  # Default: Bullish Only
