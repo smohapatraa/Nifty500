@@ -26,6 +26,32 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------
+# POP-UP BANNER HELPERS
+# ------------------------------------------------------------
+def dated_banner(date_obj, note="follows Analysis Date"):
+    """Blue banner for date-driven blocks."""
+    st.markdown(
+        f'<div style="background: rgba(79, 172, 254, 0.15); '
+        f'border-left: 4px solid #4facfe; padding: 8px 15px; '
+        f'border-radius: 5px; margin-bottom: 10px; color: #e6f2ff;">'
+        f'📅 <b>Data as of {date_obj.strftime("%d %b %Y")}</b> — {note}'
+        f'</div>',
+        unsafe_allow_html=True
+    )
+
+
+def live_banner(note="independent of Analysis Date"):
+    """Green banner for live blocks."""
+    st.markdown(
+        f'<div style="background: rgba(0, 255, 136, 0.15); '
+        f'border-left: 4px solid #00ff88; padding: 8px 15px; '
+        f'border-radius: 5px; margin-bottom: 10px; color: #e6ffe6;">'
+        f'🕐 <b>LIVE</b> — updated {datetime.now().strftime("%H:%M:%S")} IST · {note}'
+        f'</div>',
+        unsafe_allow_html=True
+    )
+
+# ------------------------------------------------------------
 # SMART DEFAULT DATE HELPERS
 # ------------------------------------------------------------
 def get_default_candidate_date():
@@ -383,7 +409,7 @@ def get_breadth_multiplier(gainers, total):
 # ------------------------------------------------------------
 # 4b. LIVE SECTORAL INDICES (NSEPython Server Edition)
 # ------------------------------------------------------------
-@st.cache_data(ttl=300)  # 5-minute cache to align with auto-refresh
+@st.cache_data(ttl=300)
 def fetch_sector_data(sector_list):
     """Fetch live data for sectoral indices using nsepythonserver."""
     try:
@@ -617,6 +643,7 @@ if day_name in ['Saturday', 'Sunday']:
 # ------------------------------------------------------------
 st.divider()
 st.subheader("🌍 Macro Market Dashboard")
+dated_banner(selected_date, note="follows Analysis Date")
 
 if 'macro_indicators' not in st.session_state:
     st.session_state.macro_indicators = None
@@ -677,7 +704,7 @@ with col_usdinr:
 # ------------------------------------------------------------
 st.divider()
 st.subheader("📊 Live Sectoral Indices Dashboard")
-st.caption("Real-time data for key NSE sectoral indices")
+live_banner(note="independent of Analysis Date")
 
 SECTOR_INDICES = [
     "NIFTY BANK",
@@ -743,6 +770,9 @@ macro_risk_score, risk_factors = calculate_macro_risk_score(macro_indicators)
 macro_multiplier = get_macro_multiplier(macro_risk_score)
 
 st.divider()
+st.subheader("⚠️ Macro Risk Assessment")
+dated_banner(selected_date, note="calculated from macro data on this date")
+
 col_risk1, col_risk2 = st.columns([1, 2])
 
 with col_risk1:
@@ -779,7 +809,8 @@ if df_metrics.empty:
 # MARKET OVERVIEW
 # ------------------------------------------------------------
 st.divider()
-st.subheader(f"📈 {index_type} Market Overview - {selected_date.strftime('%d %B %Y')}")
+st.subheader(f"📈 {index_type} Market Overview")
+dated_banner(selected_date, note="follows Analysis Date")
 
 gainers = len(df_metrics[df_metrics["Daily Change %"] > 0])
 losers = len(df_metrics[df_metrics["Daily Change %"] < 0])
@@ -810,6 +841,7 @@ final_daily_loss_limit = final_risk_per_trade * 3
 
 st.divider()
 st.subheader("🎯 FINAL TRADING PARAMETERS (Unified Risk)")
+dated_banner(selected_date, note="calculated for this date")
 
 col_final1, col_final2, col_final3, col_final4 = st.columns(4)
 with col_final1:
@@ -876,6 +908,7 @@ filtered_df = filtered_df.sort_values(['Pre-Mkt Score', 'Turnover (Cr)'], ascend
 
 st.divider()
 st.subheader("🔍 Advanced Strategy Screener Results")
+dated_banner(selected_date, note="follows Analysis Date")
 st.markdown(f"**📋 Showing {len(filtered_df)} stocks matching criteria**")
 
 if len(filtered_df) >= 3:
@@ -889,6 +922,7 @@ st.dataframe(filtered_df, hide_index=True, use_container_width=True, height=600)
 # ------------------------------------------------------------
 st.divider()
 st.subheader("🥇 Gold Price Tracker & Next-Day Opening Prediction")
+live_banner(note="independent of Analysis Date")
 
 @st.cache_data(ttl=1800)
 def fetch_gold_related_data():
@@ -1123,6 +1157,7 @@ else:
 # ------------------------------------------------------------
 st.divider()
 st.subheader("🚦 Gold Buy Zone / Sell Zone Indicator")
+live_banner(note="independent of Analysis Date")
 
 st.sidebar.header("🥇 Gold Strategy Settings")
 core_holding_pct = st.sidebar.slider("Core Holding (% never sold)", 0, 100, 60, 5)
