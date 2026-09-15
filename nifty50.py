@@ -32,15 +32,12 @@ def get_default_candidate_date():
     """Return today if after 6 PM IST, else the previous weekday (skip weekends)."""
     ist = timezone(timedelta(hours=5, minutes=30))
     now_ist = datetime.now(ist)
-
     if now_ist.hour < 18:
         candidate = now_ist.date() - timedelta(days=1)
     else:
         candidate = now_ist.date()
-
     while candidate.weekday() >= 5:
         candidate -= timedelta(days=1)
-
     return candidate
 
 
@@ -48,10 +45,8 @@ def has_market_data(base_data, check_date):
     """Return True if at least a few stocks have OHLC data on check_date."""
     if not base_data:
         return False
-
     target = pd.Timestamp(check_date)
     count = 0
-
     for ticker, hist in base_data.items():
         if hist is None or hist.empty:
             continue
@@ -67,7 +62,6 @@ def has_market_data(base_data, check_date):
                         return True
         except Exception:
             continue
-
     return False
 
 
@@ -117,7 +111,6 @@ def get_image_base64(path):
         return base64.b64encode(f.read()).decode()
 
 profile_path = "myimage.jpg"
-
 if os.path.exists(profile_path):
     try:
         img_b64 = get_image_base64(profile_path)
@@ -322,22 +315,12 @@ def fetch_macro_indicators_for_date(target_date):
 
 def get_fallback_macro_data():
     return {
-        'nifty': {
-            'close': 24500.00, 'change': 0.50,
-            'high': 24600.00, 'low': 24400.00,
-            '5d_data': np.array([24400, 24450, 24500, 24480, 24500]),
-            'data_date': 'fallback'
-        },
-        'crude': {
-            'close': 75.00, 'change': -0.50,
-            '5d_data': np.array([76, 75.5, 75, 74.5, 75]),
-            'data_date': 'fallback'
-        },
-        'usdinr': {
-            'close': 83.50, 'change': 0.10,
-            '5d_data': np.array([83.3, 83.4, 83.45, 83.5, 83.5]),
-            'data_date': 'fallback'
-        }
+        'nifty': {'close': 24500.00, 'change': 0.50, 'high': 24600.00, 'low': 24400.00,
+                  '5d_data': np.array([24400, 24450, 24500, 24480, 24500]), 'data_date': 'fallback'},
+        'crude': {'close': 75.00, 'change': -0.50,
+                  '5d_data': np.array([76, 75.5, 75, 74.5, 75]), 'data_date': 'fallback'},
+        'usdinr': {'close': 83.50, 'change': 0.10,
+                   '5d_data': np.array([83.3, 83.4, 83.45, 83.5, 83.5]), 'data_date': 'fallback'}
     }
 
 
@@ -396,6 +379,34 @@ def get_breadth_multiplier(gainers, total):
         return 1.0
     else:
         return 0.5
+
+# ------------------------------------------------------------
+# 4b. LIVE SECTORAL INDICES (NSEPython Server Edition)
+# ------------------------------------------------------------
+@st.cache_data(ttl=300)  # 5-minute cache to align with auto-refresh
+def fetch_sector_data(sector_list):
+    """Fetch live data for sectoral indices using nsepythonserver."""
+    try:
+        from nsepythonserver import index_info
+    except ImportError:
+        return pd.DataFrame()
+
+    sector_data = []
+    for sector in sector_list:
+        try:
+            data = index_info(sector)
+            if data:
+                sector_data.append({
+                    "Sector": sector,
+                    "Last Price": data.get('last', 0),
+                    "Change (%)": data.get('percentChange', 0),
+                    "Open": data.get('open', 0),
+                    "High": data.get('high', 0),
+                    "Low": data.get('low', 0)
+                })
+        except Exception:
+            continue
+    return pd.DataFrame(sector_data)
 
 # ------------------------------------------------------------
 # 5. COMPUTE ENHANCED METRICS
@@ -547,9 +558,6 @@ st.caption("Technical Market Analysis • Intraday Setups • Gold Trading Strat
 st.caption("⚠️ Important: Please read the Disclaimer at the bottom of this page before using the screener.")
 st.markdown("### Complete Pre-Market Analysis Dashboard | 1:2 Risk-Reward SOP + Gold Trading")
 
-# ------------------------------------------------------------
-# SIDEBAR CONFIG
-# ------------------------------------------------------------
 st.sidebar.header("⚙️ Configuration")
 
 index_type = st.sidebar.selectbox(
@@ -565,7 +573,6 @@ trading_capital = st.sidebar.number_input(
 risk_per_trade = trading_capital * 0.01
 st.sidebar.caption(f"Base Risk per trade (1%): ₹{risk_per_trade:,.0f}")
 
-# Reserve the date widget slot — will be filled AFTER base_data loads
 date_placeholder = st.sidebar.empty()
 
 # ------------------------------------------------------------
@@ -588,7 +595,7 @@ if not base_data:
     st.stop()
 
 # ------------------------------------------------------------
-# SMART DEFAULT DATE (fills the reserved placeholder)
+# SMART DEFAULT DATE
 # ------------------------------------------------------------
 _candidate = get_default_candidate_date()
 default_date = find_last_trading_date(base_data, _candidate)
@@ -664,6 +671,70 @@ with col_usdinr:
             f'<h2>₹{u["close"]:,.4f}</h2>'
             f'<p style="color:{color};font-size:18px;">{u["change"]:+.2f}%</p>'
             f'</div>', unsafe_allow_html=True)
+
+# ------------------------------------------------------------
+# 4b. LIVE SECTORAL INDICES DASHBOARD
+# ------------------------------------------------------------
+st.divider()
+st.subheader("📊 Live Sectoral Indices Dashboard")
+st.caption("Real-time data for key NSE sectoral indices")
+
+SECTOR_INDICES = [
+    "NIFTY BANK",
+    "NIFTY IT",
+    "NIFTY FINANCIAL SERVICES",
+    "NIFTY AUTO",
+    "NIFTY FMCG",
+    "NIFTY METAL",
+    "NIFTY PHARMA",
+    "NIFTY REALTY",
+    "NIFTY ENERGY",
+    "NIFTY PSU BANK",
+    "NIFTY PRIVATE BANK",
+    "NIFTY MEDIA"
+]
+
+with st.spinner("Fetching live sector data from NSE..."):
+    df_sectors = fetch_sector_data(SECTOR_INDICES)
+
+if not df_sectors.empty:
+    def color_change(val):
+        if val > 0:
+            return 'color: #00ff88'
+        elif val < 0:
+            return 'color: #ff6b6b'
+        else:
+            return 'color: #ffffff'
+
+    styled_df = df_sectors.style.map(color_change, subset=['Change (%)'])
+
+    st.dataframe(
+        styled_df,
+        column_config={
+            "Last Price": st.column_config.NumberColumn(format="%.2f"),
+            "Change (%)": st.column_config.NumberColumn(format="%.2f%%"),
+            "Open": st.column_config.NumberColumn(format="%.2f"),
+            "High": st.column_config.NumberColumn(format="%.2f"),
+            "Low": st.column_config.NumberColumn(format="%.2f"),
+        },
+        hide_index=True,
+        use_container_width=True
+    )
+
+    st.subheader("Sector Performance Overview")
+    fig_sectors = px.bar(
+        df_sectors.sort_values('Change (%)', ascending=True),
+        x='Change (%)',
+        y='Sector',
+        orientation='h',
+        color='Change (%)',
+        color_continuous_scale=['#ff6b6b', '#ffffff', '#00ff88'],
+        title="Sectoral Performance (Change %)"
+    )
+    fig_sectors.update_layout(height=500, showlegend=False)
+    st.plotly_chart(fig_sectors, use_container_width=True)
+else:
+    st.warning("⚠️ Unable to fetch live sector data. NSE API may be temporarily unavailable.")
 
 # ------------------------------------------------------------
 # MACRO RISK
