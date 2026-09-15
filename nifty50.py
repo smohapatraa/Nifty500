@@ -102,6 +102,26 @@ def get_nifty_tickers(index_type="Nifty 50"):
         st.error(f"Failed to fetch {index_type} list: {e}")
         return None
 
+
+from datetime import datetime, timedelta, timezone
+
+def get_default_market_date():
+    """Return today if after 6 PM IST, else the previous weekday."""
+    ist = timezone(timedelta(hours=5, minutes=30))
+    now_ist = datetime.now(ist)
+
+    # If before 6 PM, use previous day; otherwise use today
+    if now_ist.hour < 18:
+        candidate = now_ist.date() - timedelta(days=1)
+    else:
+        candidate = now_ist.date()
+
+    # Skip weekends only
+    while candidate.weekday() >= 5:  # 5 = Saturday, 6 = Sunday
+        candidate -= timedelta(days=1)
+
+    return candidate
+
 # ------------------------------------------------------------
 # 2. DOWNLOAD EXTENDED DATA
 # ------------------------------------------------------------
@@ -500,10 +520,10 @@ st.sidebar.caption(f"Base Risk per trade (1%): ₹{risk_per_trade:,.0f}")
 
 selected_date = st.sidebar.date_input(
     "Select Analysis Date",
-    value=datetime.today(),
-    max_value=datetime.today()
+    value=get_default_market_date(),
+    max_value=datetime.today(),
+    help="Defaults to previous weekday, or today after 6 PM IST"
 )
-
 day_name = selected_date.strftime('%A')
 if day_name in ['Saturday', 'Sunday']:
     st.sidebar.warning(f"⚠️ {day_name} - Markets closed")
