@@ -878,7 +878,7 @@ trend_filter = st.sidebar.selectbox(
     index=1  # Default: Bullish Only
 )
 breakout_period = st.sidebar.selectbox("Breakout Period", ["5-Day", "10-Day", "20-Day"])
-breakout_type = st.sidebar.selectbox("Breakout Type", ["All", "Breakout (Long)", "Breakdown (Short)"])
+breakout_type = st.sidebar.selectbox("Breakout Type", ["All", "Breakout (Long)", "Breakdown (Short)"],ondex=1)
 volume_filter = st.sidebar.selectbox("Volume Spike", ["None", "5-Day Spike", "10-Day Spike", "20-Day Spike"])
 
 filtered_df = df_metrics.copy()
