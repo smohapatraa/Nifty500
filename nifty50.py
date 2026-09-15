@@ -13,7 +13,7 @@ from PIL import Image
 # ------------------------------------------------------------
 # AUTO-REFRESH (every 5 minutes = 300,000 ms)
 # ------------------------------------------------------------
-st_autorefresh(interval=300000, key="nifty_gold_refresh")
+st_autorefresh(interval=30000, key="nifty_gold_refresh")
 
 # ------------------------------------------------------------
 # Streamlit page config
