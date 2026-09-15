@@ -871,7 +871,7 @@ st.markdown(f"""
 # ------------------------------------------------------------
 st.sidebar.header("🎯 Screener Filters")
 search = st.sidebar.text_input("🔎 Search Symbol/Company", "").strip().upper()
-min_score = st.sidebar.slider("Minimum Pre-Market Score", 0, 5, 3)
+min_score = st.sidebar.slider("Minimum Pre-Market Score", 0, 5, 4)
 trend_filter = st.sidebar.selectbox("Daily Trend (20 EMA)", ["All", "Bullish Only", "Bearish Only"])
 breakout_period = st.sidebar.selectbox("Breakout Period", ["5-Day", "10-Day", "20-Day"])
 breakout_type = st.sidebar.selectbox("Breakout Type", ["All", "Breakout (Long)", "Breakdown (Short)"])
