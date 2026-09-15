@@ -594,7 +594,7 @@ index_type = st.sidebar.selectbox(
 
 trading_capital = st.sidebar.number_input(
     "Trading Capital (₹)",
-    min_value=10000, value=100000, step=10000
+    min_value=10000, value=1000000, step=10000
 )
 
 risk_per_trade = trading_capital * 0.01
