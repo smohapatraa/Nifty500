@@ -3,14 +3,33 @@ import pandas as pd
 import yfinance as yf
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import numpy as np
 from streamlit_autorefresh import st_autorefresh
+import os
+import base64
+from PIL import Image
 
-from datetime import datetime, timedelta, timezone
+# ------------------------------------------------------------
+# AUTO-REFRESH (every 5 minutes = 300,000 ms)
+# ------------------------------------------------------------
+st_autorefresh(interval=300000, key="nifty_gold_refresh")
 
+# ------------------------------------------------------------
+# Streamlit page config
+# ------------------------------------------------------------
+st.set_page_config(
+    page_title="S. Mohapatra | Nifty + Gold Screener",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# ------------------------------------------------------------
+# SMART DEFAULT DATE HELPERS
+# ------------------------------------------------------------
 def get_default_candidate_date():
-    """Return today if after 6 PM IST, else the previous weekday (skip weekends only)."""
+    """Return today if after 6 PM IST, else the previous weekday (skip weekends)."""
     ist = timezone(timedelta(hours=5, minutes=30))
     now_ist = datetime.now(ist)
 
@@ -19,7 +38,6 @@ def get_default_candidate_date():
     else:
         candidate = now_ist.date()
 
-    # Skip weekends
     while candidate.weekday() >= 5:
         candidate -= timedelta(days=1)
 
@@ -37,94 +55,43 @@ def has_market_data(base_data, check_date):
     for ticker, hist in base_data.items():
         if hist is None or hist.empty:
             continue
-        # Filter to the exact date
-        day_data = hist[hist.index.normalize() == target]
-        if not day_data.empty:
-            # Ensure Close and Volume are present and not NaN
-            row = day_data.iloc[-1]
-            close = _to_float(row['Close']) if 'Close' in row else None
-            vol = _to_float(row['Volume']) if 'Volume' in row else None
-            if close and vol and not pd.isna(close) and not pd.isna(vol):
-                count += 1
-                if count >= 5:  # enough signal that the market was open
-                    return True
+        try:
+            day_data = hist[hist.index.normalize() == target]
+            if not day_data.empty:
+                row = day_data.iloc[-1]
+                close = _to_float(row['Close']) if 'Close' in row else None
+                vol = _to_float(row['Volume']) if 'Volume' in row else None
+                if close and vol and not pd.isna(close) and not pd.isna(vol):
+                    count += 1
+                    if count >= 5:
+                        return True
+        except Exception:
+            continue
 
     return False
 
 
 def find_last_trading_date(base_data, start_date, max_lookback=15):
-    """Walk backwards from start_date until a date with real market data is found."""
+    """Walk backwards until a date with real market data is found."""
     candidate = start_date
     for _ in range(max_lookback):
-        # Skip weekends quickly
         while candidate.weekday() >= 5:
             candidate -= timedelta(days=1)
-
         if has_market_data(base_data, candidate):
             return candidate
-
         candidate -= timedelta(days=1)
-
-    return start_date  # fallback
-
-# 300,000 milliseconds = 5 minutes
-st_autorefresh(interval=300000, key="nifty_gold_refresh")
+    return start_date
 
 # ------------------------------------------------------------
-# Streamlit page config
-# ------------------------------------------------------------
-st.set_page_config(page_title="Nifty Intraday + Gold Strategy Screener", layout="wide")
-
-import os
-import base64
-from PIL import Image
-
-def get_image_base64(path):
-    with open(path, "rb") as f:
-        return base64.b64encode(f.read()).decode()
-
-profile_path = "myimage.jpg"
-
-if os.path.exists(profile_path):
-    img_b64 = get_image_base64(profile_path)
-    st.sidebar.markdown(f"""
-    <div style="text-align: center; padding: 15px;">
-        <img src="data:image/jpeg;base64,{img_b64}"
-             style="border-radius: 50%; width: 150px; height: 150px;
-                    object-fit: cover; border: 4px solid #FFD700;
-                    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);">
-        <h3 style="margin: 15px 0 5px 0; color: #FFD700;">S. Mohapatra</h3>
-        <p style="font-size: 13px; color: #00ff88; margin: 5px 0; font-weight: 600;">
-            💼 Finance &amp; Accounts
-        </p>
-        <p style="font-size: 13px; color: #4facfe; margin: 5px 0; font-weight: 600;">
-            📊 Data Analyst
-        </p>
-        <div style="margin-top: 12px; padding: 10px;
-                    background: rgba(255, 255, 255, 0.05);
-                    border-radius: 8px;">
-            <p style="font-size: 11px; color: #ccc; margin: 0; line-height: 1.8;">
-                🐍 <b>Python</b> &nbsp;·&nbsp; 🐼 <b>Pandas</b> &nbsp;·&nbsp; 🚀 <b>Streamlit</b>
-            </p>
-        </div>
-        <p style="font-size: 10px; color: #888; margin-top: 12px; font-style: italic;">
-            "Turning spreadsheets into insights."
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-else:
-    st.sidebar.info("📷 Profile picture not found — add profile.jpg to the repo")# ------------------------------------------------------------
 # HELPER: Ensure DataFrame columns are 1-D Series
 # ------------------------------------------------------------
 def _squeeze_close(df):
-    """Return a clean 1-D Series of Close prices, safe against multi-index columns."""
+    """Return a clean 1-D Series of Close prices."""
     if df is None or df.empty:
         return None
     close = df['Close']
-    # If it's a DataFrame (multi-index), squeeze to Series
     if isinstance(close, pd.DataFrame):
         close = close.iloc[:, 0]
-    # Drop NaN and coerce to float
     close = pd.to_numeric(close, errors='coerce').dropna()
     return close if len(close) > 0 else None
 
@@ -141,6 +108,48 @@ def _to_float(x):
         return float(x)
     except Exception:
         return None
+
+# ------------------------------------------------------------
+# PROFILE CARD (sidebar)
+# ------------------------------------------------------------
+def get_image_base64(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+profile_path = "myimage.jpg"
+
+if os.path.exists(profile_path):
+    try:
+        img_b64 = get_image_base64(profile_path)
+        st.sidebar.markdown(f"""
+        <div style="text-align: center; padding: 15px;">
+            <img src="data:image/jpeg;base64,{img_b64}"
+                 style="border-radius: 50%; width: 150px; height: 150px;
+                        object-fit: cover; border: 4px solid #FFD700;
+                        box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);">
+            <h3 style="margin: 15px 0 5px 0; color: #FFD700;">S. Mohapatra</h3>
+            <p style="font-size: 13px; color: #00ff88; margin: 5px 0; font-weight: 600;">
+                💼 Finance &amp; Accounts
+            </p>
+            <p style="font-size: 13px; color: #4facfe; margin: 5px 0; font-weight: 600;">
+                📊 Data Analyst
+            </p>
+            <div style="margin-top: 12px; padding: 10px;
+                        background: rgba(255, 255, 255, 0.05);
+                        border-radius: 8px;">
+                <p style="font-size: 11px; color: #ccc; margin: 0; line-height: 1.8;">
+                    🐍 <b>Python</b> &nbsp;·&nbsp; 🐼 <b>Pandas</b> &nbsp;·&nbsp; 🚀 <b>Streamlit</b>
+                </p>
+            </div>
+            <p style="font-size: 10px; color: #888; margin-top: 12px; font-style: italic;">
+                "Turning spreadsheets into insights."
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    except Exception:
+        pass
+else:
+    st.sidebar.info("📷 Profile picture not found — add myimage.jpg to the repo")
 
 # ------------------------------------------------------------
 # 1. FETCH NIFTY CONSTITUENTS
@@ -162,7 +171,6 @@ def get_nifty_tickers(index_type="Nifty 50"):
         st.error(f"Failed to fetch {index_type} list: {e}")
         return None
 
-
 # ------------------------------------------------------------
 # 2. DOWNLOAD EXTENDED DATA
 # ------------------------------------------------------------
@@ -173,7 +181,7 @@ def load_all_recent_data(ticker_df):
     tickers = ticker_df['YF_Ticker'].tolist()
     all_data = {}
     total = len(tickers)
-    progress_bar = st.progress(0, text="Downloading 120-day market data for Sitakanta Mohapatra...")
+    progress_bar = st.progress(0, text="Downloading 120-day market data...")
     batch_size = 50
     for i in range(0, total, batch_size):
         batch = tickers[i:i+batch_size]
@@ -534,16 +542,14 @@ def compute_enhanced_metrics(all_data, ticker_df, target_date, index_type):
 # ------------------------------------------------------------
 # 6. MAIN APP UI
 # ------------------------------------------------------------
-# Main title
 st.title("📊 Mohapatra S. — Indian Market Intraday & Gold Strategy Screener")
-
-# Subtitle / tagline
 st.caption("Technical Market Analysis • Intraday Setups • Gold Trading Strategies")
-
-# Disclaimer notice
 st.caption("⚠️ Important: Please read the Disclaimer at the bottom of this page before using the screener.")
 st.markdown("### Complete Pre-Market Analysis Dashboard | 1:2 Risk-Reward SOP + Gold Trading")
 
+# ------------------------------------------------------------
+# SIDEBAR CONFIG
+# ------------------------------------------------------------
 st.sidebar.header("⚙️ Configuration")
 
 index_type = st.sidebar.selectbox(
@@ -559,15 +565,9 @@ trading_capital = st.sidebar.number_input(
 risk_per_trade = trading_capital * 0.01
 st.sidebar.caption(f"Base Risk per trade (1%): ₹{risk_per_trade:,.0f}")
 
-selected_date = st.sidebar.date_input(
-    "Select Analysis Date",
-    value=datetime.today(),
-    max_value=datetime.today()
-)
+# Reserve the date widget slot — will be filled AFTER base_data loads
+date_placeholder = st.sidebar.empty()
 
-day_name = selected_date.strftime('%A')
-if day_name in ['Saturday', 'Sunday']:
-    st.sidebar.warning(f"⚠️ {day_name} - Markets closed")
 # ------------------------------------------------------------
 # LOAD DATA
 # ------------------------------------------------------------
@@ -586,6 +586,24 @@ with st.spinner("Downloading 120-day market data (cached)..."):
 if not base_data:
     st.error("Failed to download market data. Check internet connection.")
     st.stop()
+
+# ------------------------------------------------------------
+# SMART DEFAULT DATE (fills the reserved placeholder)
+# ------------------------------------------------------------
+_candidate = get_default_candidate_date()
+default_date = find_last_trading_date(base_data, _candidate)
+
+with date_placeholder.container():
+    selected_date = st.sidebar.date_input(
+        "Select Analysis Date",
+        value=default_date,
+        max_value=datetime.today(),
+        help="Defaults to last date with actual market data (6 PM IST cutoff)."
+    )
+
+day_name = selected_date.strftime('%A')
+if day_name in ['Saturday', 'Sunday']:
+    st.sidebar.warning(f"⚠️ {day_name} - Markets closed")
 
 # ------------------------------------------------------------
 # MACRO INDICATORS
@@ -710,7 +728,6 @@ with col4:
 with col5:
     st.metric("🎯 High Score (≥3)", high_score_stocks)
 
-# Breadth
 total_stocks = len(df_metrics)
 breadth_ratio = gainers / total_stocks * 100 if total_stocks > 0 else 0
 breadth_multiplier = get_breadth_multiplier(gainers, total_stocks)
@@ -797,7 +814,7 @@ if len(filtered_df) >= 3:
 st.dataframe(filtered_df, hide_index=True, use_container_width=True, height=600)
 
 # ------------------------------------------------------------
-# 7. GOLD TRACKER + PREDICTION (FIXED)
+# 7. GOLD TRACKER + PREDICTION
 # ------------------------------------------------------------
 st.divider()
 st.subheader("🥇 Gold Price Tracker & Next-Day Opening Prediction")
@@ -827,61 +844,46 @@ def fetch_gold_related_data():
 
 
 def predict_next_day_open(gold_df, inr_df, etf_df):
-    """
-    Predict next-day opening using trend (5-day slope) + momentum (3-day return).
-    All calculations use scalar floats to avoid Series ambiguity.
-    """
     predictions = {}
 
-    # ---------- GOLD ----------
     gold_close = _squeeze_close(gold_df)
     if gold_close is not None and len(gold_close) >= 10:
         last = float(gold_close.iloc[-1])
         recent_5 = gold_close.tail(5).values.astype(float)
         slope = float(np.polyfit(np.arange(len(recent_5)), recent_5, 1)[0])
         trend_pred = last + slope
-
         returns_3 = float(gold_close.pct_change().tail(3).mean())
         momentum_pred = last * (1 + returns_3)
-
         gold_pred = float(trend_pred * 0.6 + momentum_pred * 0.4)
-
         predictions['gold'] = {
             'last_close': round(last, 2),
             'predicted_open': round(gold_pred, 2),
             'change_pct': round(((gold_pred - last) / last) * 100, 2),
         }
 
-    # ---------- USD/INR ----------
     inr_close = _squeeze_close(inr_df)
     if inr_close is not None and len(inr_close) >= 10:
         last = float(inr_close.iloc[-1])
         recent_5 = inr_close.tail(5).values.astype(float)
         slope = float(np.polyfit(np.arange(len(recent_5)), recent_5, 1)[0])
         trend_pred = last + slope
-
         returns_3 = float(inr_close.pct_change().tail(3).mean())
         momentum_pred = last * (1 + returns_3)
-
         inr_pred = float(trend_pred * 0.6 + momentum_pred * 0.4)
-
         predictions['usdinr'] = {
             'last_close': round(last, 4),
             'predicted_open': round(inr_pred, 4),
             'change_pct': round(((inr_pred - last) / last) * 100, 3),
         }
 
-    # ---------- SETFGOLD ----------
     etf_close = _squeeze_close(etf_df)
     if etf_close is not None and len(etf_close) >= 10:
         last = float(etf_close.iloc[-1])
         recent_5 = etf_close.tail(5).values.astype(float)
         slope = float(np.polyfit(np.arange(len(recent_5)), recent_5, 1)[0])
         trend_pred = last + slope
-
         returns_3 = float(etf_close.pct_change().tail(3).mean())
         momentum_pred = last * (1 + returns_3)
-
         etf_pred_technical = float(trend_pred * 0.6 + momentum_pred * 0.4)
 
         etf_pred_correlated = None
@@ -920,7 +922,6 @@ if gold_df is None:
 else:
     predictions = predict_next_day_open(gold_df, inr_df, etf_df)
 
-    # Snapshot
     st.markdown("### 📊 Current Market Snapshot")
     col_g1, col_g2, col_g3 = st.columns(3)
 
@@ -966,7 +967,6 @@ else:
                 f'<p style="color:{color};font-size:16px;">{ec_chg:+.2f}%</p>'
                 f'<small>SBI Gold ETF</small></div>', unsafe_allow_html=True)
 
-    # Predictions
     st.divider()
     st.markdown("### 🔮 Next-Day Opening Price Prediction")
 
@@ -996,7 +996,6 @@ else:
                       delta=f"{p['change_pct']:+.2f}% {arrow}")
             st.caption(f"Last: ₹{p['last_close']:,.2f}")
 
-    # Trading Suggestion
     st.divider()
     st.markdown("### 📋 Trading Suggestion for SETFGOLD")
 
@@ -1073,7 +1072,6 @@ def calculate_buy_sell_zones(etf_df, gold_df, inr_df,
     if etf_close is None or len(etf_close) < 20:
         return None
 
-    # Safely extract High and Low as flat Series (handles multi-index columns)
     def _squeeze_col(df, col):
         if df is None or df.empty or col not in df.columns:
             return None
@@ -1228,7 +1226,6 @@ if etf_df is not None and len(etf_df) >= 20:
 - Max Alloc: {max_gold_allocation_pct}%
 """)
 
-        # Chart with trigger lines
         st.markdown("### 📈 SETFGOLD Price with Buy/Sell Zones")
         chart_data = etf_df.tail(60).copy()
         chart_close = _squeeze_close(chart_data)
@@ -1291,6 +1288,7 @@ with col_dl2:
 
 st.divider()
 st.caption("⚠️ Not financial advice. Always verify at market open (9:15 AM IST).")
+
 # ------------------------------------------------------------
 # SEBI DISCLAIMER
 # ------------------------------------------------------------
