@@ -589,6 +589,7 @@ st.sidebar.header("⚙️ Configuration")
 index_type = st.sidebar.selectbox(
     "Select Index Universe",
     ["Nifty 50", "Nifty 100", "Nifty 200"]
+    index=2
 )
 
 trading_capital = st.sidebar.number_input(
