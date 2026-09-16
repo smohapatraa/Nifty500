@@ -590,9 +590,19 @@ st.caption("⚠️ Important: Please read the Disclaimer at the bottom of this p
 st.markdown("### Complete Pre-Market Analysis Dashboard | 1:2 Risk-Reward SOP + Gold Trading")
 st.caption("💡 **Tip:** Tap the glowing circle (top-left) to open Settings & Filters")
 # ------------------------------------------------------------
-# SIDEBAR TOGGLE BUTTON (Main Window)
+#Trust Note
 # ------------------------------------------------------------
+st.info("""
+✅ **Trust Note from the Developer**
 
+This is a **free, personal-use** trading dashboard built by **Sitakanta Mohapatra**. 
+- 🔒 No login required · No email collected · No cookies tracked
+- 📊 Data is sourced from public APIs (NSE, Yahoo Finance)
+- 💰 100% free · No ads · No upsells
+- 📖 Read the full disclaimer at the bottom
+
+If someone shared this link with you, they trust it. Feel free to explore safely.
+""")
 # ------------------------------------------------------------
 # REFRESH BUTTON (Main Window)
 # ------------------------------------------------------------
