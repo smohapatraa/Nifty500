@@ -24,6 +24,47 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+# ------------------------------------------------------------
+# HIDE STREAMLIT BRANDING (menu, footer, GitHub, Deploy button)
+# ------------------------------------------------------------
+st.markdown("""
+<style>
+    /* Hide the top header bar (Streamlit menu + Deploy button) */
+    header[data-testid="stHeader"] {
+        display: none;
+    }
+
+    /* Hide the hamburger menu (top-right three dots) */
+    #MainMenu {
+        visibility: hidden;
+    }
+
+    /* Hide the "Made with Streamlit" footer */
+    footer {
+        visibility: hidden;
+    }
+
+    /* Hide the Streamlit toolbar (GitHub, Deploy, etc.) */
+    [data-testid="stToolbar"] {
+        display: none !important;
+    }
+
+    /* Hide the "Deploy" button specifically */
+    [data-testid="stAppDeployButton"] {
+        display: none !important;
+    }
+
+    /* Hide the status widget (Running/Stop indicators) */
+    [data-testid="stStatusWidget"] {
+        display: none !important;
+    }
+
+    /* Remove extra padding at top so content starts cleanly */
+    .block-container {
+        padding-top: 1rem;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # ------------------------------------------------------------
 # POP-UP BANNER HELPERS
