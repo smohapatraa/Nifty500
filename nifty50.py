@@ -30,50 +30,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 # ------------------------------------------------------------
-# HIDE STREAMLIT BRANDING (menu, footer, GitHub, Deploy button)
-# ------------------------------------------------------------
-st.markdown("""
-<style>
-    /* Hide only the hamburger menu and footer */
-    #MainMenu { visibility: hidden; }
-    footer { visibility: hidden; }
-    [data-testid="stToolbar"] { display: none !important; }
-    [data-testid="stAppDeployButton"] { display: none !important; }
-    [data-testid="stStatusWidget"] { display: none !important; }
-
-    /* Clean top padding */
-    .block-container { padding-top: 1rem; }
-
-    /* ===== MAKE THE NATIVE SIDEBAR ARROW GLOW & PULSE ===== */
-    [data-testid="stSidebarCollapsedControl"] button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        border-radius: 50% !important;
-        box-shadow: 0 0 25px rgba(102, 126, 234, 0.9) !important;
-        width: 55px !important;
-        height: 55px !important;
-        position: fixed !important;
-        top: 20px !important;
-        left: 20px !important;
-        z-index: 999999 !important;
-        animation: pulseGlow 2s infinite;
-    }
-
-    [data-testid="stSidebarCollapsedControl"] button svg {
-        color: white !important;
-        fill: white !important;
-        width: 30px !important;
-        height: 30px !important;
-    }
-
-    @keyframes pulseGlow {
-        0%   { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.8); }
-        70%  { box-shadow: 0 0 0 20px rgba(102, 126, 234, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# ------------------------------------------------------------
 # POP-UP BANNER HELPERS
 # ------------------------------------------------------------
 def dated_banner(date_obj, note="follows Analysis Date"):
