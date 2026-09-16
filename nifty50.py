@@ -34,43 +34,39 @@ st.set_page_config(
 # ------------------------------------------------------------
 st.markdown("""
 <style>
-    /* Hide the top header bar (Streamlit menu + Deploy button) */
-    header[data-testid="stHeader"] {
-        display: none;
-    }
-
-    /* Hide the hamburger menu (top-right three dots) */
-    #MainMenu {
-        visibility: hidden;
-    }
+    /* Hide ONLY the Streamlit menu button — keep sidebar toggle visible */
+    #MainMenu { visibility: hidden; }
 
     /* Hide the "Made with Streamlit" footer */
-    footer {
-        visibility: hidden;
-    }
+    footer { visibility: hidden; }
 
-    /* Hide the Streamlit toolbar (GitHub, Deploy, etc.) */
-    [data-testid="stToolbar"] {
-        display: none !important;
-    }
+    /* Hide the toolbar (Deploy button, GitHub link, status widget) */
+    [data-testid="stToolbar"] { display: none !important; }
+    [data-testid="stAppDeployButton"] { display: none !important; }
+    [data-testid="stStatusWidget"] { display: none !important; }
 
-    /* Hide the "Deploy" button specifically */
-    [data-testid="stAppDeployButton"] {
-        display: none !important;
-    }
+    /* DO NOT hide header — it contains the sidebar toggle on mobile */
+    /* header[data-testid="stHeader"] { display: none; }   ← REMOVED */
 
-    /* Hide the status widget (Running/Stop indicators) */
-    [data-testid="stStatusWidget"] {
-        display: none !important;
-    }
+    /* Clean top padding */
+    .block-container { padding-top: 1rem; }
 
-    /* Remove extra padding at top so content starts cleanly */
-    .block-container {
-        padding-top: 1rem;
+    /* Make sidebar toggle arrow more visible on mobile */
+    [data-testid="stSidebarCollapsedControl"] button {
+        background-color: #4facfe !important;
+        border-radius: 50% !important;
+        box-shadow: 0 0 15px rgba(79, 172, 254, 0.8) !important;
+        width: 45px !important;
+        height: 45px !important;
+    }
+    [data-testid="stSidebarCollapsedControl"] button svg {
+        color: white !important;
+        fill: white !important;
+        width: 24px !important;
+        height: 24px !important;
     }
 </style>
 """, unsafe_allow_html=True)
-
 # ------------------------------------------------------------
 # POP-UP BANNER HELPERS
 # ------------------------------------------------------------
