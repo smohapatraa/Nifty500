@@ -628,6 +628,74 @@ st.caption("⚠️ Important: Please read the Disclaimer at the bottom of this p
 st.markdown("### Complete Pre-Market Analysis Dashboard | 1:2 Risk-Reward SOP + Gold Trading")
 
 # ------------------------------------------------------------
+# SIDEBAR TOGGLE BUTTON (Main Window)
+# ------------------------------------------------------------
+import streamlit.components.v1 as components
+
+def open_sidebar_button():
+    """Renders a button that opens the sidebar via JS injection."""
+    # Create the button using HTML/CSS directly
+    components.html(
+        """
+        <style>
+            .sidebar-open-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 30px;
+                font-family: 'Source Sans Pro', sans-serif;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                border: none;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .sidebar-open-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            }
+            .sidebar-open-btn:active {
+                transform: translateY(0);
+            }
+        </style>
+        <button class="sidebar-open-btn" onclick="openParentSidebar()">
+            ☰ Menu & Settings
+        </button>
+        <script>
+            function openParentSidebar() {
+                try {
+                    // Find the sidebar toggle button in the parent document
+                    const parentDoc = window.parent.document;
+                    const toggleBtn = parentDoc.querySelector('[data-testid="stSidebarCollapsedControl"] button')
+                        || parentDoc.querySelector('[data-testid="collapsedControl"] button')
+                        || parentDoc.querySelector('button[kind="header"]');
+
+                    if (toggleBtn) {
+                        toggleBtn.click();
+                    } else {
+                        // Fallback: try to expand the sidebar directly
+                        const sidebar = parentDoc.querySelector('[data-testid="stSidebar"]');
+                        if (sidebar) {
+                            sidebar.style.transform = 'translateX(0)';
+                            sidebar.style.visibility = 'visible';
+                        }
+                    }
+                } catch (e) {
+                    console.log('Sidebar toggle failed:', e);
+                }
+            }
+        </script>
+        """,
+        height=60,
+    )
+
+open_sidebar_button()
+
+# ------------------------------------------------------------
 # REFRESH BUTTON (Main Window)
 # ------------------------------------------------------------
 col_refresh_1, col_refresh_2, col_refresh_3 = st.columns([1, 1, 4])
