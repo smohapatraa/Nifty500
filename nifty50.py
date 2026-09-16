@@ -588,7 +588,7 @@ st.title("📊 Mohapatra S. — Indian Market Intraday & Gold Strategy Screener"
 st.caption("Technical Market Analysis • Intraday Setups • Gold Trading Strategies")
 st.caption("⚠️ Important: Please read the Disclaimer at the bottom of this page before using the screener.")
 st.markdown("### Complete Pre-Market Analysis Dashboard | 1:2 Risk-Reward SOP + Gold Trading")
-st.caption("💡 **Tip:** Tap the glowing circle (top-left) to open Settings & Filters")
+
 # ------------------------------------------------------------
 #Trust Note
 # ------------------------------------------------------------
