@@ -631,6 +631,21 @@ st.caption("Technical Market Analysis • Intraday Setups • Gold Trading Strat
 st.caption("⚠️ Important: Please read the Disclaimer at the bottom of this page before using the screener.")
 st.markdown("### Complete Pre-Market Analysis Dashboard | 1:2 Risk-Reward SOP + Gold Trading")
 
+# ------------------------------------------------------------
+# REFRESH BUTTON (Main Window)
+# ------------------------------------------------------------
+col_refresh_1, col_refresh_2, col_refresh_3 = st.columns([1, 1, 4])
+
+with col_refresh_1:
+    if st.button("🔄 Refresh Live Data", use_container_width=True, type="primary",
+                 help="Clears all caches and downloads fresh data from NSE and Yahoo. Takes 30-60 sec."):
+        st.cache_data.clear()
+        st.toast("♻️ Cache cleared — fetching fresh data...", icon="🔄")
+        st.rerun()
+
+with col_refresh_2:
+    st.caption(f"🕐 Last refresh: **{_ist_now()} IST**")
+
 st.sidebar.header("⚙️ Configuration")
 
 index_type = st.sidebar.selectbox(
