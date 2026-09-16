@@ -34,39 +34,45 @@ st.set_page_config(
 # ------------------------------------------------------------
 st.markdown("""
 <style>
-    /* Hide ONLY the Streamlit menu button — keep sidebar toggle visible */
+    /* Hide only the hamburger menu and footer */
     #MainMenu { visibility: hidden; }
-
-    /* Hide the "Made with Streamlit" footer */
     footer { visibility: hidden; }
-
-    /* Hide the toolbar (Deploy button, GitHub link, status widget) */
     [data-testid="stToolbar"] { display: none !important; }
     [data-testid="stAppDeployButton"] { display: none !important; }
     [data-testid="stStatusWidget"] { display: none !important; }
 
-    /* DO NOT hide header — it contains the sidebar toggle on mobile */
-    /* header[data-testid="stHeader"] { display: none; }   ← REMOVED */
-
     /* Clean top padding */
     .block-container { padding-top: 1rem; }
 
-    /* Make sidebar toggle arrow more visible on mobile */
+    /* ===== MAKE THE NATIVE SIDEBAR ARROW GLOW & PULSE ===== */
     [data-testid="stSidebarCollapsedControl"] button {
-        background-color: #4facfe !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         border-radius: 50% !important;
-        box-shadow: 0 0 15px rgba(79, 172, 254, 0.8) !important;
-        width: 45px !important;
-        height: 45px !important;
+        box-shadow: 0 0 25px rgba(102, 126, 234, 0.9) !important;
+        width: 55px !important;
+        height: 55px !important;
+        position: fixed !important;
+        top: 20px !important;
+        left: 20px !important;
+        z-index: 999999 !important;
+        animation: pulseGlow 2s infinite;
     }
+
     [data-testid="stSidebarCollapsedControl"] button svg {
         color: white !important;
         fill: white !important;
-        width: 24px !important;
-        height: 24px !important;
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    @keyframes pulseGlow {
+        0%   { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.8); }
+        70%  { box-shadow: 0 0 0 20px rgba(102, 126, 234, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
     }
 </style>
 """, unsafe_allow_html=True)
+
 # ------------------------------------------------------------
 # POP-UP BANNER HELPERS
 # ------------------------------------------------------------
@@ -626,7 +632,7 @@ st.title("📊 Mohapatra S. — Indian Market Intraday & Gold Strategy Screener"
 st.caption("Technical Market Analysis • Intraday Setups • Gold Trading Strategies")
 st.caption("⚠️ Important: Please read the Disclaimer at the bottom of this page before using the screener.")
 st.markdown("### Complete Pre-Market Analysis Dashboard | 1:2 Risk-Reward SOP + Gold Trading")
-
+st.caption("💡 **Tip:** Tap the glowing circle (top-left) to open Settings & Filters")
 # ------------------------------------------------------------
 # SIDEBAR TOGGLE BUTTON (Main Window)
 # ------------------------------------------------------------
