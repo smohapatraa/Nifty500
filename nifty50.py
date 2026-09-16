@@ -10,6 +10,11 @@ import os
 import base64
 from PIL import Image
 
+def _ist_now():
+    """Return current time in IST (UTC +5:30) as a formatted string."""
+    ist = timezone(timedelta(hours=5, minutes=30))
+    return datetime.now(ist).strftime("%H:%M:%S")
+
 # ------------------------------------------------------------
 # AUTO-REFRESH (every 5 minutes = 300,000 ms)
 # ------------------------------------------------------------
@@ -82,16 +87,17 @@ def dated_banner(date_obj, note="follows Analysis Date"):
 
 
 def live_banner(note="independent of Analysis Date"):
-    """Green banner for live blocks."""
+    """Green banner for live blocks — shows TRUE IST time."""
+    ist = timezone(timedelta(hours=5, minutes=30))
+    ist_time = datetime.now(ist).strftime("%H:%M:%S")
     st.markdown(
         f'<div style="background: rgba(0, 255, 136, 0.15); '
         f'border-left: 4px solid #00ff88; padding: 8px 15px; '
         f'border-radius: 5px; margin-bottom: 10px; color: #e6ffe6;">'
-        f'🕐 <b>LIVE</b> — updated {datetime.now().strftime("%H:%M:%S")} IST · {note}'
+        f'🕐 <b>LIVE</b> — updated {ist_time} IST · {note}'
         f'</div>',
         unsafe_allow_html=True
     )
-
 # ------------------------------------------------------------
 # SMART DEFAULT DATE HELPERS
 # ------------------------------------------------------------
