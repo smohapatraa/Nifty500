@@ -755,6 +755,12 @@ st.subheader("📊 Live Sectoral Indices Dashboard")
 live_banner(note="independent of Analysis Date")
 
 SECTOR_INDICES = [
+    "NIFTY 50"
+    "NIFTY 100"
+    "NIFTY MIDCAP 100"
+    "NIFTY SMLCAP 100"
+    "NIFTY NEXT 50"
+    "NIFTY MID SELECT"
     "NIFTY BANK",
     "NIFTY IT",
     "NIFTY FINANCIAL SERVICES",
@@ -767,6 +773,7 @@ SECTOR_INDICES = [
     "NIFTY PSU BANK",
     "NIFTY PRIVATE BANK",
     "NIFTY MEDIA"
+    
 ]
 
 with st.spinner("Fetching live sector data from NSE..."):
